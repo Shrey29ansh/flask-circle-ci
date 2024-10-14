@@ -98,7 +98,6 @@ workflows:
                 - staging
           requires:
             - lint-test
-      - pr-comment-fail:
       - slack-notification:
           filters:
             branches:
