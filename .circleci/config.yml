@@ -89,21 +89,17 @@ workflows:
     jobs:
       - printenv
       - lint-test:
-          filters:
-            branches:
-              only:
-                - dev
-                - staging
-                - main
           requires:
             - printenv
       - test:
           filters:
             branches:
               only:
+                - /.*/
+              ignore:
+                - main
                 - dev
                 - staging
-                - main
           requires:
             - lint-test
       - slack-notification:
@@ -122,8 +118,3 @@ workflows:
           requires:
             - waiter
           filters:
-            branches:
-              only:
-                - dev
-                - staging
-                - main
