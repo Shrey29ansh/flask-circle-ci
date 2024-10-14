@@ -20,17 +20,10 @@ jobs:
       - checkout
       - python/install-packages:
           pkg-manager: pip
-          # app-dir: ~/project/package-directory/  # If your requirements.txt isn't in the root directory.
-          # pip-dependency-file: test-requirements.txt  # if you have a different name for your requirements file, maybe one that combines your runtime and test requirements.
       - run:
           name: Run tests
           command: |
-            if flake8 app.py | grep -q "0"; then
-              echo "Lint has passed and ready to merge"
-            else
-              echo "Lint failed, fix the issues"
-              exit 1
-            fi
+            flake8 --verbose app.py
       - run:
           name: Linting done
           command: echo "Linting done"
