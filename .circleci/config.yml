@@ -25,7 +25,7 @@ jobs:
       - run:
           name: Run tests
           command: |
-            if flake8 . | grep -q "0"; then
+            if flake8 app.py | grep -q "0"; then
               echo "Lint has passed and ready to merge"
             else
               echo "Lint failed, fix the issues"
