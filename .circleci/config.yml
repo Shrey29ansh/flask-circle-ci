@@ -23,7 +23,8 @@ jobs:
       - run:
           name: Run tests
           command: |
-            flake8 --ignore=F401,F821,E741,F821,E501,E501,F821,E501,E501,W292 --verbose app.py
+            echo "F401"
+            flake8 --ignore=F821,E741,F821,E501,E501,F821,E501,E501,W292 --verbose app.py
       - run:
           name: Linting done
           command: echo "Linting done"
