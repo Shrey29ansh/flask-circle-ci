@@ -117,4 +117,3 @@ workflows:
       - pr-comment-fail:
           requires:
             - waiter
-          filters:
