@@ -1,4 +1,8 @@
 version: 2.1
+parameters:
+  image_tag:
+    type: string
+    default: "current"
 
 orbs:
   python: circleci/python@2.1.1
@@ -26,7 +30,7 @@ jobs:
                   "fields": [
                     {
                       "type": "plain_text",
-                      "text": "*This is a text notification*",
+                      "text": "*This is a text notification* <<pipeline.parameters.image_tag>>",
                       "emoji": true
                     }
                   ]
