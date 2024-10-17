@@ -1,5 +1,11 @@
 version: 2.1
 parameters:
+  environment:
+    type: string
+    default: "dev"
+  release_tag:
+    type: string
+    default: "latest"
   image_tag:
     type: string
     default: "current"
@@ -30,7 +36,7 @@ jobs:
                   "fields": [
                     {
                       "type": "plain_text",
-                      "text": "*This is a text notification* <<pipeline.parameters.image_tag>>",
+                      "text": "*This is a text notification* <<pipeline.parameters.image_tag>> <<pipeline.trigger_parameters.circleci.trigger_type>> <<pipeline.trigger_parameters.circleci.event_type>>",
                       "emoji": true
                     }
                   ]
