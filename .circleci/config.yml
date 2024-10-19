@@ -9,30 +9,18 @@ parameters:
   image_tag:
     type: string
     default: "current"
+  slack-messages:
+    type: string
+    default: "Circle CI Job started for project ${CIRCLE_PROJECT_REPONAME} on ${CIRCLE_BRANCH} branch"
 
-orbs:
-  python: circleci/python@2.1.1
-  slack: circleci/slack@4.9.3
-
-jobs:
-  printenv:
-    docker:
-      - image: cimg/python:3.12
+commands:
+  slack-notification-customized:
+    description: "This is dynamic slack notification to use."
+    parameters:
+      message:
+        type: string
+        default: "Circle CI Job started for project ${CIRCLE_PROJECT_REPONAME} on ${CIRCLE_BRANCH} branch"
     steps:
-      - run:
-          name: Printenvs
-          command: |
-            printenv
-            python3 --version
-  notify: 
-    docker:
-      - image: 'cimg/base:stable'
-    steps:
-      - run:
-          name: Printenvs
-          command: |
-            printenv
-            python3 --version
       - slack/notify:
           custom: |
             {
@@ -42,14 +30,87 @@ jobs:
                   "fields": [
                     {
                       "type": "plain_text",
-                      "text": "*This is a text notification* <<pipeline.parameters.image_tag>> <<pipeline.trigger_source>>",
+                      "text": "<<parameters.message>>",
                       "emoji": true
                     }
                   ]
                 }
               ]
             }
-          event: always
+orbs:
+  python: circleci/python@2.1.1
+  slack: circleci/slack@4.9.3
+
+jobs:
+  pre-build:
+    docker:
+      - image: cimg/python:3.12
+    steps:
+      - run:
+          name: Printenvs
+          command: |
+            printenv
+            python3 --version
+  build:
+    docker:
+      - image: cimg/python:3.12
+    steps:
+      - run:
+          name: Printenvs
+          command: |
+            echo "BUILD Docker"
+  push:
+    docker:
+      - image: cimg/python:3.12
+    steps:
+      - run:
+          name: Printenvs
+          command: |
+            echo "ECR Push to dev environment with dev-some random"
+  deploy-to-dev:
+    docker:
+      - image: cimg/python:3.12
+    steps:
+      - run:
+          name: Printenvs
+          command: |
+            echo "ECS Deployment to dev environment for developer testing"
+            
+  deploy-to-staging:
+    docker:
+      - image: cimg/python:3.12
+    steps:
+      - run:
+          name: Printenvs
+          command: |
+            echo "ECS Deployment to staging environment for QA testing"
+  
+  deploy-to-production:
+    docker:
+      - image: cimg/python:3.12
+    steps:
+      - run:
+          name: Printenvs
+          command: |
+            echo "ECS Deployment to production environment."
+
+  post-production:
+    docker:
+      - image: cimg/python:3.12
+    steps:
+      - slack-notification-customized:
+          message: "Hurrahhh!! A production deployment\nIsn't this Awesome.Circle CI deployed a new Version on to production environment."
+
+  notify: 
+    parameters:
+      message:
+        type: string
+        default: "Circle CI Job started for project ${CIRCLE_PROJECT_REPONAME} on ${CIRCLE_BRANCH} branch "
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - slack-notification-customized:
+          message: "<<parameters.message>>"
   lint-test:
     docker:
       - image: cimg/python:3.12
@@ -117,28 +178,30 @@ jobs:
       - run: echo "All required jobs have now completed"
 
 workflows:
+  version: 2
   pr-workflow:
-    jobs:
-      - printenv
-      - lint-test:
-          requires:
-            - printenv
-      - approval-for-test:
-          type: approval
-          requires: 
-            - lint-test
-      - test:
-          filters:
-            branches:
-              only:
-                - /.*/
-              ignore:
-                - main
-                - dev
-                - staging
-          requires:
-            - lint-test
-  send-notification:
     jobs:
       - notify:
           context: slack-secrets
+      - pre-build:
+          context: AWS
+          requires: 
+            - notify
+      - test
+      - build
+      - push
+      - deploy-to-dev
+      - staging-approval:
+          type: approval
+          requires:
+            - deploy-to-dev
+      - deploy-to-staging
+      - production-approval:
+          type: approval
+          requires:
+            - deploy-to-staging
+      - deploy-to-production
+      - post-production:
+          context: slack-secrets
+          requires:
+            - deploy-to-production
