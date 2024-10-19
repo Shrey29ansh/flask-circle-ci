@@ -22,11 +22,17 @@ jobs:
       - run:
           name: Printenvs
           command: |
-            jssddf ss
+            printenv
+            python3 --version
   notify: 
     docker:
       - image: 'cimg/base:stable'
     steps:
+      - run:
+          name: Printenvs
+          command: |
+            printenv
+            python3 --version
       - slack/notify:
           custom: |
             {
