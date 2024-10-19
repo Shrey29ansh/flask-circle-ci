@@ -117,6 +117,10 @@ workflows:
       - lint-test:
           requires:
             - printenv
+      - approval-for-test:
+          type: approval
+          requires: 
+            - lint-test
       - test:
           filters:
             branches:
