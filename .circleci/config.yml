@@ -84,7 +84,7 @@ jobs:
           name: Printenvs
           command: |
             echo "ECS Deployment to staging environment for QA testing"
-  
+      - circleci run release plan --environment-name=staging --component-name= --target-version=${CIRCLE_BUILD_NUM} core-platform
   deploy-to-production:
     docker:
       - image: cimg/python:3.12
