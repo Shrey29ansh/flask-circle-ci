@@ -1,0 +1,26 @@
+BRANCH
+CIRCLE_REPOSITORY_URL=git@github.com:Shrey29ansh/flask-circle-ci.git
+CIRCLE_PROJECT_REPONAME=flask-circle-ci
+CIRCLE_USERNAME=Shrey29ansh
+CIRCLE_BRANCH=main
+CIRCLE_PROJECT_USERNAME=Shrey29ansh
+CIRCLE_BUILD_NUM=1
+CIRCLE_PROJECT_ID=4cfcc041-3130-4784-a113-d812e07ca1b1
+CIRCLE_BUILD_URL=https://circleci.com/gh/Shrey29ansh/flask-circle-ci/1
+CIRCLE_JOB=printenv
+
+
+PULL REQUEST
+CIRCLE_PULL_REQUESTS=https://github.com/Shrey29ansh/flask-circle-ci/pull/1
+CIRCLE_REPOSITORY_URL=git@github.com:Shrey29ansh/flask-circle-ci.git
+CIRCLE_PROJECT_REPONAME=flask-circle-ci
+CIRCLE_PULL_REQUEST=https://github.com/Shrey29ansh/flask-circle-ci/pull/1
+CIRCLE_USERNAME=Shrey29ansh
+CIRCLE_BRANCH=configuring-circle-ci
+CIRCLE_PROJECT_USERNAME=Shrey29ansh
+CIRCLE_BUILD_NUM=19
+CIRCLE_PROJECT_ID=4cfcc041-3130-4784-a113-d812e07ca1b1
+TERM=dumb
+NO_PROXY=127.0.0.1,localhost,circleci-internal-outer-build-agent
+CI_PULL_REQUEST=https://github.com/Shrey29ansh/flask-circle-ci/pull/1
+CIRCLE_BUILD_URL=https://circleci.com/gh/Shrey29ansh/flask-circle-ci/19

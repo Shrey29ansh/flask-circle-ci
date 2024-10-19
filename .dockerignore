@@ -1,2 +1,8 @@
-Dockerfile
-venv
+docker/
+.circleci/
+__pycache__
+Notes
+README.md
+.gitignore
+.git/
+LICENSE
