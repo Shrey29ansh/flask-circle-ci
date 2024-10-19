@@ -9,11 +9,13 @@ commands:
     description: "This is dynamic slack notification to use when an event is success only."
     steps:
       - slack/notify:
+          event: pass
           template: success_tagged_deploy_1
   failure-slack:
     description: "This is dynamic slack notification to use when an event is success only."
     steps:
       - slack/notify:
+          event: fail
           template: basic_fail_1
   slack-notification-customized:
     description: "This is dynamic slack notification to use."
@@ -98,10 +100,8 @@ jobs:
     docker:
       - image: 'cimg/base:stable'
     steps:
-      - success-slack:
-          event: pass
-      - failure-slack:
-          event: fail
+      - success-slack
+      - failure-slack
 
   notify: 
     parameters:
