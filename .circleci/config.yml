@@ -192,7 +192,7 @@ workflows:
           requires:
             - pre-build
       - push:
-          required:
+          requires:
             - build
       - deploy-to-dev:
           requires:
