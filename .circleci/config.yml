@@ -84,7 +84,6 @@ jobs:
           name: Printenvs
           command: |
             echo "ECS Deployment to staging environment for QA testing"
-      - circleci run release plan --environment-name=staging --component-name= --target-version=${CIRCLE_BUILD_NUM} core-platform
   deploy-to-production:
     docker:
       - image: cimg/python:3.12
@@ -201,6 +200,10 @@ workflows:
           type: approval
           requires:
             - deploy-to-dev
+      - slack/on-hold:
+          context: slack-secrets
+          requires:
+            - staging-approval
       - deploy-to-staging:
           requires:
             - staging-approval
@@ -208,6 +211,10 @@ workflows:
           type: approval
           requires:
             - deploy-to-staging
+      - slack/on-hold:
+          context: slack-secrets
+          requires:
+            - production-approval
       - deploy-to-production:
           requires:
             - production-approval
