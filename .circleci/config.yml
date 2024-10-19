@@ -96,7 +96,7 @@ jobs:
 
   post-production:
     docker:
-      - image: cimg/python:3.12
+      - image: 'cimg/base:stable'
     steps:
       - slack-notification-customized:
           message: "Hurrahhh!! A production deployment\nIsn't this Awesome.Circle CI deployed a new Version on to production environment."
