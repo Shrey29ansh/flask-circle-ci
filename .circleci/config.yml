@@ -196,25 +196,27 @@ workflows:
       - deploy-to-dev:
           requires:
             - push
+      - slack/on-hold:
+          context: slack-secrets
+          requires:
+            - deploy-to-dev
       - staging-approval:
           type: approval
           requires:
             - deploy-to-dev
-      - slack/on-hold:
-          context: slack-secrets
-          requires:
-            - staging-approval
+            - slack/on-hold
       - deploy-to-staging:
           requires:
             - staging-approval
+      - slack/on-hold:
+          context: slack-secrets
+          requires:
+            - deploy-to-staging
       - production-approval:
           type: approval
           requires:
             - deploy-to-staging
-      - slack/on-hold:
-          context: slack-secrets
-          requires:
-            - production-approval
+            - slack/on-hold
       - deploy-to-production:
           requires:
             - production-approval
