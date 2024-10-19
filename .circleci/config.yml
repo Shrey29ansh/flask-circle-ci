@@ -197,6 +197,7 @@ workflows:
           requires:
             - push
       - slack/on-hold:
+          name: approval-staging
           context: slack-secrets
           requires:
             - deploy-to-dev
@@ -204,11 +205,12 @@ workflows:
           type: approval
           requires:
             - deploy-to-dev
-            - slack/on-hold
+            - approval-staging
       - deploy-to-staging:
           requires:
             - staging-approval
       - slack/on-hold:
+          name: approval-production
           context: slack-secrets
           requires:
             - deploy-to-staging
@@ -216,7 +218,7 @@ workflows:
           type: approval
           requires:
             - deploy-to-staging
-            - slack/on-hold
+            - approval-production
       - deploy-to-production:
           requires:
             - production-approval
