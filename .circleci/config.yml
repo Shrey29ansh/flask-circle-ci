@@ -194,7 +194,7 @@ workflows:
       - push:
           required:
             - build
-      - deploy-to-dev
+      - deploy-to-dev:
           requires:
             - push
       - staging-approval:
@@ -208,7 +208,7 @@ workflows:
           type: approval
           requires:
             - deploy-to-staging
-      - deploy-to-production
+      - deploy-to-production:
           requires:
             - production-approval
       - post-production:
