@@ -1,19 +1,20 @@
 version: 2.1
 parameters:
-  environment:
+  app_name:
     type: string
-    default: "dev"
-  release_tag:
-    type: string
-    default: "latest"
-  image_tag:
-    type: string
-    default: "current"
-  slack-messages:
-    type: string
-    default: "Circle CI Job started for project ${CIRCLE_PROJECT_REPONAME} on ${CIRCLE_BRANCH} branch"
+    default: "core-platform"
 
 commands:
+  success-slack:
+    description: "This is dynamic slack notification to use when an event is success only."
+    steps:
+      - slack/notify:
+          template: success_tagged_deploy_1
+  failure-slack:
+    description: "This is dynamic slack notification to use when an event is success only."
+    steps:
+      - slack/notify:
+          template: basic_fail_1
   slack-notification-customized:
     description: "This is dynamic slack notification to use."
     parameters:
@@ -97,8 +98,10 @@ jobs:
     docker:
       - image: 'cimg/base:stable'
     steps:
-      - slack-notification-customized:
-          message: "Hurrahhh!! A production deployment. Isn't this Awesome.Circle CI deployed a new Version on to production environment."
+      - success-slack:
+          event: pass
+      - failure-slack:
+          event: fail
 
   notify: 
     parameters:
@@ -204,7 +207,6 @@ workflows:
       - staging-approval:
           type: approval
           requires:
-            - deploy-to-dev
             - approval-staging
       - deploy-to-staging:
           requires:
@@ -213,11 +215,10 @@ workflows:
           name: approval-production
           context: slack-secrets
           requires:
-            - deploy-to-staging
+            - deploy-to-dev
       - production-approval:
           type: approval
           requires:
-            - deploy-to-staging
             - approval-production
       - deploy-to-production:
           requires:
