@@ -188,19 +188,29 @@ workflows:
           requires: 
             - notify
       - test
-      - build
-      - push
+      - build:
+          requires:
+            - pre-build
+      - push:
+          required:
+            - build
       - deploy-to-dev
+          requires:
+            - push
       - staging-approval:
           type: approval
           requires:
             - deploy-to-dev
-      - deploy-to-staging
+      - deploy-to-staging:
+          requires:
+            - staging-approval
       - production-approval:
           type: approval
           requires:
             - deploy-to-staging
       - deploy-to-production
+          requires:
+            - production-approval
       - post-production:
           context: slack-secrets
           requires:
