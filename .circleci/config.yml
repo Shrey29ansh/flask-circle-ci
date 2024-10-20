@@ -137,16 +137,16 @@ jobs:
       deploy_environment: 
         type: string
         default: dev
-      task_definition_prefix:
+      task_definition_name:
         type: string
-        default: <<pipeline.parameters.app_name>>-<<parameters.deploy_environment>-td
+        default: <<pipeline.parameters.app_name>>-<<parameters.deploy_environment>>-td
     executor:
       name: aws-ecr/default
     working_directory: ~/application
     steps:
       - run:
           environment:
-            TASK_DEFINITION: <<parameters.task_definition_prefix>> # <<pipeline.parameters.app_name>>-<<parameter.deploy_environment>>-td 
+            TASK_DEFINITION: <<parameters.task_definition_name>> # <<pipeline.parameters.app_name>>-<<parameter.deploy_environment>>-td 
             IMAGE_NAME: <<parameters.ecr_repo_uri>>/<<parameters.ecr_repo_name>>
             RELEASE_IMAGE_NAME: <<parameters.ecr_repo_uri>>/<<parameters.ecr_repo_name>>:<<parameters.docker_image_tag>>
           command: |
@@ -276,7 +276,7 @@ workflows:
           context: AWS
           deploy_environment: dev
           ecr_repo_name: mvp
-          task_definition_prefix: mvp
+          task_definition_name: mvp-dev-td
           requires: 
             - docker-build-and-push
       # - deploy-to-dev:
