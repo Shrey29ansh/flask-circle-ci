@@ -82,27 +82,7 @@ jobs:
           # Running this sample commmand to  Check if everything is working fine.
           command: | 
             aws sts get-caller-identity
-  docker-build:
-    executor:
-      name: aws-ecr/default
-    working_directory: ~/application
-    steps:
-      - checkout
-      - docker/build:
-          debug: false 
-          docker-context: <<pipeline.parameters.build_path>> 
-          dockerfile: <<pipeline.parameters.dockerfile_name>> 
-          extra_build_args: <<pipeline.parameters.extra_build_args>> 
-          path: <<pipeline.parameters.dockerfile_path>> 
-          lint-dockerfile: false 
-          image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/<<pipeline.parameters.app_name>>
-          tag: "${CIRCLE_BRANCH}-${CIRCLE_SHA1}-${CIRCLE_BUILD_NUM}"
-          treat-warnings-as-errors: false 
-      - run:
-          command: | 
-            echo "Docker Image built with tag ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/<<pipeline.parameters.app_name>>:${CIRCLE_BRANCH}-${CIRCLE_SHA1}-${CIRCLE_BUILD_NUM}"
-  
-  docker-ecr-push:
+  docker-build-and-push:
     parameters:
       ecr_repo_name:
         type: string
@@ -112,7 +92,25 @@ jobs:
         default: ${CIRCLE_BRANCH}-${CIRCLE_SHA1}-${CIRCLE_BUILD_NUM}
     executor:
       name: aws-ecr/default
+    working_directory: ~/application
     steps:
+      - checkout
+      - run:
+          command: |
+            aws --version
+      - docker/build:
+          debug: false 
+          docker-context: <<pipeline.parameters.build_path>> 
+          dockerfile: <<pipeline.parameters.dockerfile_name>> 
+          extra_build_args: <<pipeline.parameters.extra_build_args>> 
+          path: <<pipeline.parameters.dockerfile_path>> 
+          lint-dockerfile: false 
+          image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/<<parameters.ecr_repo_name>> 
+          tag: <<parameters.docker_image_tag>>
+          treat-warnings-as-errors: false 
+      - run:
+          command: | 
+            echo "Docker Image built with tag ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/<<pipeline.parameters.app_name>>:${CIRCLE_BRANCH}-${CIRCLE_SHA1}-${CIRCLE_BUILD_NUM}"
       - aws-ecr/ecr_login:
           public_registry: false 
           use_credentials_helper: true 
@@ -120,9 +118,7 @@ jobs:
           public_registry: false 
           repo: <<parameters.ecr_repo_name>> 
           tag: <<parameters.docker_image_tag>>
-      - run:
-          command: |
-            aws --version
+      
   test:
     docker:
       - image: cimg/python:3.12
@@ -225,8 +221,6 @@ workflows:
     jobs:
       - notify:
           context: slack-secrets
-      # - aws-setup:
-      #     context: AWS
       - test:
           requires:
             - notify
@@ -236,12 +230,8 @@ workflows:
                 - dev
                 - staging
                 - main 
-      - docker-build:
+      - docker-build-and-push:
           context: AWS
-      - docker-ecr-push:
-          context: AWS
-          requires:
-            - docker-build
           # requires:
           #   - aws-setup
       # - push:
@@ -278,3 +268,5 @@ workflows:
       #     context: slack-secrets
       #     requires:
       #       - deploy-to-production
+      # - aws-setup:
+      #     context: AWS
