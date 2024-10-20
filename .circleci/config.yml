@@ -93,6 +93,9 @@ jobs:
         type: string
         default: "<<pipeline.parameters.ecr_image_tag>>"
     steps:
+      - run:
+          command: |
+            echo "${ECR_IMAGE_TAG}" 
       - aws-ecr/build_and_push_image:
           attach_workspace: true 
           account_id: ${AWS_ACCOUNT_ID} 
@@ -117,7 +120,7 @@ jobs:
           tag: "<<parameters.release_ecr_image_tag>>"
           use_credentials_helper: true 
           auth:
-            - 
+            - aws-cli/setup
   test:
     docker:
       - image: cimg/python:3.12
