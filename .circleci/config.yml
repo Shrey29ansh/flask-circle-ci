@@ -103,6 +103,13 @@ jobs:
             echo "Docker Image built with tag ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/<<pipeline.parameters.app_name>>:${CIRCLE_BRANCH}-${CIRCLE_SHA1}-${CIRCLE_BUILD_NUM}"
   
   docker-ecr-push:
+    parameters:
+      ecr_repo_name:
+        type: string
+        default: <<pipeline.parameters.app_name>>
+      docker_image_tag:
+        type: string
+        default: ${CIRCLE_BRANCH}-${CIRCLE_SHA1}-${CIRCLE_BUILD_NUM}
     executor:
       name: aws-ecr/default
     steps:
@@ -111,8 +118,8 @@ jobs:
           use_credentials_helper: true 
       - aws-ecr/push_image:
           public_registry: false 
-          repo: <<pipeline.parameters.app_name>> 
-          tag: "${CIRCLE_BRANCH}-${CIRCLE_SHA1}-${CIRCLE_BUILD_NUM}" 
+          repo: <<parameters.ecr_repo_name>> 
+          tag: <<parameters.docker_image_tag>>
       - run:
           command: |
             aws --version
