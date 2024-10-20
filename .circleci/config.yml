@@ -87,11 +87,6 @@ jobs:
     working_directory: ~/application
     steps:
       - checkout
-      - run:
-          command: |
-            printenv
-            export ECR_IMAGE_TAG="${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}-${CIRCLE_SHA1}"
-            echo "${ECR_IMAGE_TAG}"
       - aws-ecr/build_and_push_image:
           attach_workspace: true 
           account_id: ${AWS_ACCOUNT_ID} 
@@ -113,7 +108,7 @@ jobs:
           repo_scan_on_push: true 
           set_repo_policy: false 
           setup_remote_docker: false 
-          tag: "${ECR_IMAGE_TAG}"
+          tag: "${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}-${CIRCLE_SHA1}"
           use_credentials_helper: true 
           auth:
             -
