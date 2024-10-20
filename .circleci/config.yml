@@ -232,6 +232,9 @@ workflows:
                 - staging
                 - main 
       - build-and-push:
+          context: AWS
+          requires: 
+            - aws-setup
           pre-steps:
             - run:
                 environment:
