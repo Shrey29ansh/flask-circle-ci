@@ -111,7 +111,7 @@ jobs:
           repo_scan_on_push: true 
           set_repo_policy: false 
           setup_remote_docker: false 
-          tag: "${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}"
+          tag: "${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}-<<pipeline.trigger_parameters.gitlab.commit_sha>>"
           use_credentials_helper: true 
           auth:
             - aws-cli/setup
