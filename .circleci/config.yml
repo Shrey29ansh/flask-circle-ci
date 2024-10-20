@@ -22,9 +22,6 @@ parameters:
   dockerfile_path:
     type: string
     default: "docker"
-  platform:
-    type: string
-    default: ""
   aws_profile:
     type: string
     default: "default"
@@ -102,7 +99,6 @@ jobs:
           dockerfile: <<pipeline.parameters.dockerfile_name>> 
           extra_build_args: <<pipeline.parameters.extra_build_args>> 
           path: <<pipeline.parameters.dockerfile_path>> 
-          platform: <<pipeline.parameters.platform>> 
           profile_name: <<pipeline.parameters.aws_profile>> 
           public_registry: false 
           push_image: true 
