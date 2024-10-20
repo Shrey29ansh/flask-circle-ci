@@ -89,22 +89,10 @@ jobs:
       name: aws-ecr/default
     working_directory: ~/application
     parameters:
-      message:
+      release_ecr_image_tag:
         type: string
-        default: ""
+        default: "<<pipeline.parameters.ecr_image_tag>>"
     steps:
-      - run:
-          environment:
-            ECR_IMAGE_TAG: "<<pipeline.parameters.ecr_image_tag>>"
-          command: |
-            printenv
-            echo "Running pre-steps with ${ECR_IMAGE_TAG}"
-            if [ -z "${ECR_IMAGE_TAG}" ]; then
-              echo "Setting the default release tag for this job"
-              export ECR_IMAGE_TAG="${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}"
-            else
-              echo "Already got the parameter for ECR IMAGE TAG"
-            fi
       - aws-ecr/build_and_push_image:
           attach_workspace: true 
           account_id: ${AWS_ACCOUNT_ID} 
@@ -126,7 +114,7 @@ jobs:
           repo_scan_on_push: true 
           set_repo_policy: false 
           setup_remote_docker: false 
-          tag: ${ECR_IMAGE_TAG}
+          tag: "<<parameters.release_ecr_image_tag>>"
           use_credentials_helper: true 
           auth:
             - 
@@ -245,6 +233,18 @@ workflows:
                 - main 
       - build-and-push:
           context: AWS
+          pre-steps:
+            - run:
+                command: |
+                  printenv
+                  echo "Running pre-steps with ${ECR_IMAGE_TAG}"
+                  if [ -z "<<pipeline.parameters.ecr_image_tag>>" ]; then
+                    echo "Setting the default release tag for this job"
+                    export ECR_IMAGE_TAG="${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}"
+                  else
+                    echo "Already got the parameter for ECR IMAGE TAG"
+                  fi
+          release_ecr_image_tag: "${ECR_IMAGE_TAG}"
           requires: 
             - aws-setup
       # - push:
