@@ -125,9 +125,6 @@ jobs:
           tag: <<parameters.docker_image_tag>>
   deploy-ecs-service:
     parameters:
-      ecr_repo_uri:
-        type: string
-        default: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com
       ecr_repo_name:
         type: string
         default: <<pipeline.parameters.app_name>> 
@@ -147,12 +144,14 @@ jobs:
       - run:
           environment:
             TASK_DEFINITION: <<parameters.task_definition_name>> # <<pipeline.parameters.app_name>>-<<parameter.deploy_environment>>-td 
-            IMAGE_NAME: <<parameters.ecr_repo_uri>>/<<parameters.ecr_repo_name>>
-            RELEASE_IMAGE_NAME: <<parameters.ecr_repo_uri>>/<<parameters.ecr_repo_name>>:<<parameters.docker_image_tag>>
+            IMAGE_NAME: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/<<parameters.ecr_repo_name>>
+            RELEASE_IMAGE_NAME: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/<<parameters.ecr_repo_name>>:<<parameters.docker_image_tag>>
           command: |
             printenv
             echo "⛳️ Stage: Update"
             aws ecs describe-task-definition --task-definition ${TASK_DEFINITION} > TASK_DEFINITION.json
+            cat TASK_DEFINITION.json
+            echo "${IMAGE_NAME} ${RELEASE_IMAGE_NAME}"
             jq --arg NEW_IMAGE_NAME "${RELEASE_IMAGE_NAME}" --arg SEARCH_ECR_NAME "${IMAGE_NAME}" '.taskDefinition.containerDefinitions[] | (select(.image|contains($SEARCH_ECR_NAME)) | .image |= $NEW_IMAGE_NAME)' TASK_DEFINITION.json > raw_task_definition.txt
             jq --slurpfile CONTAINER_DEFINITION raw_task_definition.txt --arg SEARCH_ECR_NAME "${IMAGE_NAME}" '.taskDefinition | del(.containerDefinitions[] | (select(.image|contains($SEARCH_ECR_NAME)))) |  .containerDefinitions += $CONTAINER_DEFINITION | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)' TASK_DEFINITION.json > FINAL_TASK_DEFINTIION.json
             aws ecs register-task-definition --family $TASK_DEFINITION --network-mode awsvpc --region=${AWS_DEFAULT_REGION} --cli-input-json file://FINAL_TASK_DEFINTIION.json 2>&1 > /dev/null
