@@ -5,6 +5,7 @@ orbs:
   slack: circleci/slack@4.9.3
   aws-cli: circleci/aws-cli@2.0.3
   aws-ecr: circleci/aws-ecr@9.3.4
+  docker: circleci/docker@1.7.0
 
 parameters:
   app_name:
@@ -81,37 +82,40 @@ jobs:
           # Running this sample commmand to  Check if everything is working fine.
           command: | 
             aws sts get-caller-identity
-  build-and-push:
+  docker-build:
     executor:
       name: aws-ecr/default
     working_directory: ~/application
     steps:
       - checkout
-      - aws-ecr/build_and_push_image:
-          attach_workspace: true 
-          account_id: ${AWS_ACCOUNT_ID} 
-          build_path: <<pipeline.parameters.build_path>> 
-          checkout: false 
-          container_registry_login: false 
-          create_repo: false 
+      - docker/build:
+          debug: false 
+          docker-context: <<pipeline.parameters.build_path>> 
           dockerfile: <<pipeline.parameters.dockerfile_name>> 
           extra_build_args: <<pipeline.parameters.extra_build_args>> 
           path: <<pipeline.parameters.dockerfile_path>> 
-          profile_name: <<pipeline.parameters.aws_profile>> 
+          lint-dockerfile: false 
+          image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/<<pipeline.parameters.app_name>>
+          tag: "${CIRCLE_BRANCH}-${CIRCLE_SHA1}-${CIRCLE_BUILD_NUM}"
+          treat-warnings-as-errors: false 
+      - run:
+          command: | 
+            echo "Docker Image built with tag ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/<<pipeline.parameters.app_name>>:${CIRCLE_BRANCH}-${CIRCLE_SHA1}-${CIRCLE_BUILD_NUM}"
+  
+  docker-ecr-push:
+    executor:
+      name: aws-ecr/default
+    steps:
+      - aws-ecr/ecr_login:
           public_registry: false 
-          push_image: true 
-          region: ${AWS_DEFAULT_REGION} 
-          remote_docker_layer_caching: false 
-          repo: <<pipeline.parameters.app_name>> 
-          repo_encryption_kms_key: <<pipeline.parameters.kms_key_id>> 
-          repo_encryption_type: AES256 
-          repo_scan_on_push: true 
-          set_repo_policy: false 
-          setup_remote_docker: false 
-          tag: "${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}-${CIRCLE_SHA1}"
           use_credentials_helper: true 
-          auth:
-            -
+      - aws-ecr/push_image:
+          public_registry: false 
+          repo: <<pipeline.parameters.app_name>> 
+          tag: "${CIRCLE_BRANCH}-${CIRCLE_SHA1}-${CIRCLE_BUILD_NUM}" 
+      - run:
+          command: |
+            aws --version
   test:
     docker:
       - image: cimg/python:3.12
@@ -225,7 +229,8 @@ workflows:
                 - dev
                 - staging
                 - main 
-      - build-and-push:
+      - docker-build
+      - docker-ecr-push:
           context: AWS
           # requires:
           #   - aws-setup
