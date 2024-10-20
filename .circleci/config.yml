@@ -229,9 +229,12 @@ workflows:
                 - dev
                 - staging
                 - main 
-      - docker-build
+      - docker-build:
+          context: AWS
       - docker-ecr-push:
           context: AWS
+          requires:
+            - docker-build
           # requires:
           #   - aws-setup
       # - push:
