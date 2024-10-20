@@ -144,11 +144,11 @@ jobs:
       - run:
           environment:
             TASK_DEFINITION: <<parameters.task_definition_name>> # <<pipeline.parameters.app_name>>-<<parameter.deploy_environment>>-td 
-            IMAGE_NAME: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/<<parameters.ecr_repo_name>>
-            RELEASE_IMAGE_NAME: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/<<parameters.ecr_repo_name>>:<<parameters.docker_image_tag>>
           command: |
             printenv
             echo "⛳️ Stage: Update"
+            export RELEASE_IMAGE_NAME="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/<<parameters.ecr_repo_name>>:<<parameters.docker_image_tag>>"
+            export IMAGE_NAME="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/<<parameters.ecr_repo_name>>"
             aws ecs describe-task-definition --task-definition ${TASK_DEFINITION} > TASK_DEFINITION.json
             cat TASK_DEFINITION.json
             echo "${IMAGE_NAME} ${RELEASE_IMAGE_NAME}"
