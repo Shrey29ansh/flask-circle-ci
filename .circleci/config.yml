@@ -87,6 +87,37 @@ jobs:
           # Running this sample commmand to  Check if everything is working fine.
           command: | 
             aws sts get-caller-identity
+  build-and-push:
+    executor:
+      name: aws-ecr/default
+    working_directory: ~/application
+    steps:
+      - aws-ecr/build_and_push_image:
+          attach_workspace: true 
+          account_id: ${AWS_ACCOUNT_ID} 
+          build_path: <<pipeline.parameters.build_path>> 
+          checkout: true 
+          container_registry_login: false 
+          create_repo: false 
+          dockerfile: <<pipeline.parameters.dockerfile_name>> 
+          extra_build_args: <<pipeline.parameters.extra_build_args>> 
+          path: <<pipeline.parameters.dockerfile_path>> 
+          platform: <<pipeline.parameters.platform>> 
+          profile_name: <<pipeline.parameters.aws_profile>> 
+          public_registry: false 
+          push_image: true 
+          region: ${AWS_DEFAULT_REGION} 
+          remote_docker_layer_caching: false 
+          repo: <<pipeline.parameters.app_name>> 
+          repo_encryption_kms_key: <<pipeline.parameters.kms_key_id>> 
+          repo_encryption_type: AES256 
+          repo_scan_on_push: true 
+          set_repo_policy: false 
+          setup_remote_docker: false 
+          tag: ${ECR_IMAGE_TAG}
+          use_credentials_helper: true 
+          auth:
+            - 
   test:
     docker:
       - image: cimg/python:3.12
@@ -116,21 +147,7 @@ jobs:
       - run:
           name: Testing done
           command: echo "Testing is complete....."
-  build:
-    docker:
-      - image: cimg/python:3.12
-    steps:
-      - run:
-          command: | 
-            aws s3 ls
-  push:
-    docker:
-      - image: cimg/python:3.12
-    steps:
-      - run:
-          name: Printenvs
-          command: |
-            echo "ECR Push to dev environment with dev-some random"
+
   deploy-to-dev:
     docker:
       - image: cimg/python:3.12
@@ -213,14 +230,9 @@ workflows:
               only:
                 - dev
                 - staging
-                - main
-      - build:
-          requires: 
-            - notify
-            - aws-setup
-      - aws-ecr/build_and_push_image:
-          pre-steps: 
-            - checkout
+                - main 
+      - build-and-push:
+          pre-steps:
             - run:
                 environment:
                   ECR_IMAGE_TAG: <<pipeline.parameters.ecr_image_tag>>
@@ -232,31 +244,6 @@ workflows:
                   else
                     echo "Got the parameter for ECR IMAGE TAG"
                   fi
-          attach_workspace: true 
-          account_id: ${AWS_ACCOUNT_ID} 
-          build_path: <<pipeline.parameters.build_path>> 
-          checkout: true 
-          container_registry_login: false 
-          create_repo: false 
-          dockerfile: <<pipeline.parameters.dockerfile_name>> 
-          extra_build_args: <<pipeline.parameters.extra_build_args>> 
-          path: <<pipeline.parameters.dockerfile_path>> 
-          platform: <<pipeline.parameters.platform>> 
-          profile_name: <<pipeline.parameters.aws_profile>> 
-          public_registry: false 
-          push_image: true 
-          region: ${AWS_DEFAULT_REGION} 
-          remote_docker_layer_caching: false 
-          repo: <<pipeline.parameters.app_name>> 
-          repo_encryption_kms_key: <<pipeline.parameters.kms_key_id>> 
-          repo_encryption_type: AES256 
-          repo_scan_on_push: true 
-          set_repo_policy: false 
-          setup_remote_docker: false 
-          tag: ${ECR_IMAGE_TAG}
-          use_credentials_helper: true 
-          auth:
-            - 
       # - push:
       #     requires:
       #       - build
