@@ -87,6 +87,9 @@ jobs:
     working_directory: ~/application
     steps:
       - checkout
+      - run:
+          command: |
+            printenv
       - aws-ecr/build_and_push_image:
           attach_workspace: true 
           account_id: ${AWS_ACCOUNT_ID} 
