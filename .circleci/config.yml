@@ -113,7 +113,7 @@ jobs:
           repo_scan_on_push: true 
           set_repo_policy: false 
           setup_remote_docker: false 
-          tag: "${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}-${CIRCLE_SHA1}"
+          tag: "${ECR_IMAGE_TAG}"
           use_credentials_helper: true 
           auth:
             -
@@ -219,8 +219,8 @@ workflows:
     jobs:
       - notify:
           context: slack-secrets
-      - aws-setup:
-          context: AWS
+      # - aws-setup:
+      #     context: AWS
       - test:
           requires:
             - notify
@@ -232,6 +232,8 @@ workflows:
                 - main 
       - build-and-push:
           context: AWS
+          # requires:
+          #   - aws-setup
       # - push:
       #     requires:
       #       - build
