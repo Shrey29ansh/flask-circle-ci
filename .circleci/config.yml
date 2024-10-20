@@ -101,6 +101,7 @@ jobs:
       - run:
           command: |
             aws --version
+            jq --version
       - docker/build:
           debug: false 
           docker-context: <<pipeline.parameters.build_path>> 
